@@ -10,6 +10,8 @@ import { User } from './user/user.entity';
 import { Profile } from './user/profile.entity';
 import { Logs } from './logs/logs.entity';
 import { Roles } from './roles/roles.entity';
+import { LoggerModule } from 'nestjs-pino';
+import { join } from 'path';
 
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
 
@@ -44,23 +46,33 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
           entities: [User, Profile, Logs, Roles],
           // 同步本地的schema与数据库 -> 初始化的时候使用
           synchronize: configService.get(ConfigEnum.DB_SYNC),
-          // logging: ['error'],
-          logging: true,
+          logging: ['error'],
+          // logging: true,
         };
       },
     }),
-    // TypeOrmModule.forRoot({
-    //   type: 'mysql',
-    //   host: '127.0.0.1',
-    //   port: 3090,
-    //   username: 'root',
-    //   password: 'example',
-    //   database: 'testdb',
-    //   entities: [],
-    //   // 同步本地的schema与数据库 -> 初始化的时候使用
-    //   synchronize: true,
-    //   logging: ['error'],
-    // }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport:
+          process.env.NODE_ENV !== 'development'
+            ? {
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                },
+              }
+            : {
+                target: 'pino-roll',
+                options: {
+                  file: join('logs', 'log.txt'),
+                  frequenency: 'daily',
+                  mkdir: true,
+                  // 多大滚动一次
+                  size: '10m',
+                },
+              },
+      },
+    }),
     UserModule,
   ],
   controllers: [],

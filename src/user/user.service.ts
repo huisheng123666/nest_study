@@ -59,7 +59,7 @@ export class UserService {
     // SELECT logs.result, COUNT(logs.result) from logs, user WHERE user.id = logs.userId AND user.id = 1 GROUP BY logs.result;
     return this.logsRepositoy
       .createQueryBuilder('logs')
-      .select('logs.result', 'result') 
+      .select('logs.result', 'result')
       .addSelect('COUNT("logs.result")', 'count')
       .leftJoinAndSelect('logs.user', 'user')
       .where('user.id = :id', { id })
