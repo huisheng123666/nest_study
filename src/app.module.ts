@@ -1,17 +1,13 @@
 import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 // import configuration from './configuration';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigEnum } from './enum/config.enum';
 import * as dotenv from 'dotenv';
-import { User } from './user/user.entity';
-import { Profile } from './user/profile.entity';
-import { Logs } from './logs/logs.entity';
-import { Roles } from './roles/roles.entity';
-import { LoggerModule } from 'nestjs-pino';
-import { join } from 'path';
+import { LogsModule } from './logs/logs.module';
+import { RolesModule } from './roles/roles.module';
+import ormconfig from 'ormconfig';
 
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
 
@@ -32,50 +28,33 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
         DB_SYNC: Joi.boolean().default(false),
       }),
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService) => {
-        return {
-          type: configService.get(ConfigEnum.DB),
-          host: configService.get(ConfigEnum.DB_HOST),
-          port: configService.get(ConfigEnum.DB_PORT),
-          username: configService.get(ConfigEnum.DB_USERNAME),
-          password: configService.get(ConfigEnum.DB_PASSWORD),
-          database: configService.get(ConfigEnum.DB_DATABASE),
-          entities: [User, Profile, Logs, Roles],
-          // 同步本地的schema与数据库 -> 初始化的时候使用
-          synchronize: configService.get(ConfigEnum.DB_SYNC),
-          logging: ['error'],
-          // logging: true,
-        };
-      },
-    }),
-    LoggerModule.forRoot({
-      pinoHttp: {
-        transport:
-          process.env.NODE_ENV !== 'development'
-            ? {
-                target: 'pino-pretty',
-                options: {
-                  colorize: true,
-                },
-              }
-            : {
-                target: 'pino-roll',
-                options: {
-                  file: join('logs', 'log.txt'),
-                  frequenency: 'daily',
-                  mkdir: true,
-                  // 多大滚动一次
-                  size: '10m',
-                },
-              },
-      },
-    }),
+    TypeOrmModule.forRoot(ormconfig),
+    // LoggerModule.forRoot({
+    //   pinoHttp: {
+    //     transport:
+    //       process.env.NODE_ENV !== 'development'
+    //         ? {
+    //             target: 'pino-pretty',
+    //             options: {
+    //               colorize: true,
+    //             },
+    //           }
+    //         : {
+    //             target: 'pino-roll',
+    //             options: {
+    //               file: join('logs', 'log.txt'),
+    //               frequenency: 'daily',
+    //               mkdir: true,
+    //               // 多大滚动一次
+    //               size: '10m',
+    //             },
+    //           },
+    //   },
+    // }),
     UserModule,
+    LogsModule,
+    RolesModule,
   ],
   controllers: [],
-  providers: [],
 })
 export class AppModule {}

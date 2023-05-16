@@ -3,11 +3,14 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Inject,
+  LoggerService,
   Post,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ConfigService } from '@nestjs/config';
-import { Logger } from 'nestjs-pino';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+// import { Logger } from 'nestjs-pino';
 
 @Controller('user')
 export class UserController {
@@ -16,7 +19,8 @@ export class UserController {
   constructor(
     private userService: UserService,
     private configService: ConfigService,
-    private logger: Logger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
   ) {
     this.logger.log('UserController init');
   }
