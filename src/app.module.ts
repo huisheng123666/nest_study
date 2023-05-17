@@ -7,7 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
 import { LogsModule } from './logs/logs.module';
 import { RolesModule } from './roles/roles.module';
-import ormconfig from 'ormconfig';
+import { connectionParams } from '../ormconfig';
 
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
 
@@ -19,16 +19,21 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
       load: [() => dotenv.config({ path: '.env' })],
       validationSchema: Joi.object({
         DB_PORT: Joi.number(),
-        DB_HOST: Joi.string().ip(),
+        DB_HOST: Joi.alternatives().try(
+          Joi.string().ip(),
+          Joi.string().domain(),
+        ),
         // DB_URL: Joi.string().domain(),
         DB: Joi.string().valid('mysql', 'postgres'),
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_DATABASE: Joi.string().required(),
         DB_SYNC: Joi.boolean().default(false),
+        LOG_ON: Joi.boolean(),
+        LOG_LEVEL: Joi.string(),
       }),
     }),
-    TypeOrmModule.forRoot(ormconfig),
+    TypeOrmModule.forRoot(connectionParams),
     // LoggerModule.forRoot({
     //   pinoHttp: {
     //     transport:

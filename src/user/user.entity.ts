@@ -1,5 +1,5 @@
-import { Logs } from 'src/logs/logs.entity';
-import { Roles } from 'src/roles/roles.entity';
+import { Logs } from '../logs/logs.entity';
+import { Roles } from '../roles/roles.entity';
 import {
   Column,
   Entity,

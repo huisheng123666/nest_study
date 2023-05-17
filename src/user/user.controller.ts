@@ -28,13 +28,6 @@ export class UserController {
   @Get()
   getUsers(): any {
     // this.logger.log('请求用户成功');
-    const user = { isAdmin: false };
-    if (!user.isAdmin) {
-      throw new HttpException(
-        'User is not admin, Forbidden to access getAllUsers',
-        HttpStatus.FORBIDDEN,
-      );
-    }
     return this.userService.findAll();
   }
 
