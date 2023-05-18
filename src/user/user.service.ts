@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { Logs } from '../logs/logs.entity';
+import { GetUserDto } from './get-user-dto';
 
 @Injectable()
 export class UserService {
@@ -11,8 +12,30 @@ export class UserService {
     @InjectRepository(Logs) private readonly logsRepositoy: Repository<Logs>,
   ) {}
 
-  findAll() {
-    return this.userRepository.find();
+  findAll(query: GetUserDto) {
+    const { limit = 10, page, username, role, gender } = query;
+
+    return this.userRepository.find({
+      select: {
+        id: true,
+        username: true,
+      },
+      relations: {
+        profile: true,
+        roles: true,
+      },
+      where: {
+        username,
+        profile: {
+          gender,
+        },
+        roles: {
+          id: role,
+        },
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
   }
 
   find(username: string) {
@@ -69,10 +92,10 @@ export class UserService {
       .getRawMany();
   }
 
-  addUser() {
+  addUser(user: User) {
     return {
       code: 0,
-      data: [],
+      data: [user],
       msg: '添加用户成功',
     };
   }

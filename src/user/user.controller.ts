@@ -1,21 +1,22 @@
 import {
+  Body,
   Controller,
   Get,
-  HttpException,
-  HttpStatus,
   Inject,
   LoggerService,
+  Param,
+  Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-// import { Logger } from 'nestjs-pino';
+import { User } from './user.entity';
+import { GetUserDto } from './get-user-dto';
 
 @Controller('user')
 export class UserController {
-  // private logger = new Logger(UserController.name);
-
   constructor(
     private userService: UserService,
     private configService: ConfigService,
@@ -26,21 +27,42 @@ export class UserController {
   }
 
   @Get()
-  getUsers(): any {
+  getUsers(@Query() dto: GetUserDto): any {
+    console.log(
+      '🚀 ~ file: user.controller.ts:38 ~ UserController ~ getUsers ~ dto:',
+      dto,
+    );
     // this.logger.log('请求用户成功');
-    return this.userService.findAll();
+    return this.userService.findAll(dto);
   }
 
   @Post()
-  addUser() {
-    return this.userService.addUser();
+  addUser(@Body() dto: any) {
+    const user = dto as User;
+    return this.userService.addUser(user);
   }
 
   @Get('profile')
-  getUserProfile() {
+  getUserProfile(@Query('id') query: any) {
+    console.log(
+      '🚀 ~ file: user.controller.ts:42 ~ UserController ~ getUserProfile ~ query:',
+      query,
+    );
     return this.userService.findProfile(1);
   }
 
+  @Get('/:id')
+  getUser() {
+    return 'hello word';
+  }
+
+  @Patch('/:id')
+  updateUser(@Body() dto: any, @Param('id') id: number) {
+    return { id };
+  }
+
+  // todo
+  // logs module
   @Get('logs')
   getUserLogs() {
     return this.userService.findUserLogs(1);
