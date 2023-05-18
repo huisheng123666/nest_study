@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { Logs } from '../logs/logs.entity';
 import { GetUserDto } from './get-user-dto';
+import { conditionUtils } from 'src/utils/db.helper';
 
 @Injectable()
 export class UserService {
@@ -14,28 +15,42 @@ export class UserService {
 
   findAll(query: GetUserDto) {
     const { limit = 10, page, username, role, gender } = query;
+    const skip = (page - 1) * limit;
 
-    return this.userRepository.find({
-      select: {
-        id: true,
-        username: true,
-      },
-      relations: {
-        profile: true,
-        roles: true,
-      },
-      where: {
-        username,
-        profile: {
-          gender,
-        },
-        roles: {
-          id: role,
-        },
-      },
-      take: limit,
-      skip: (page - 1) * limit,
-    });
+    // return this.userRepository.find({
+    //   select: {
+    //     id: true,
+    //     username: true,
+    //   },
+    //   relations: {
+    //     profile: true,
+    //     roles: true,
+    //   },
+    //   where: {
+    //     username,
+    //     profile: {
+    //       gender,
+    //     },
+    //     roles: {
+    //       id: role,
+    //     },
+    //   },
+    //   take: limit,
+    //   skip: (page - 1) * limit,
+    // });
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .leftJoinAndSelect('user.roles', 'roles');
+
+    const obj = {
+      'user.username': username,
+      'profile.gender': gender,
+      'roles.id': role,
+    };
+    conditionUtils<User>(queryBuilder, obj);
+
+    return queryBuilder.take(limit).skip(skip).getMany();
   }
 
   find(username: string) {
@@ -48,7 +63,14 @@ export class UserService {
 
   async create(user: User) {
     const userTmp = await this.userRepository.create(user);
-    return this.userRepository.save(userTmp);
+    // try {
+    const res = await this.userRepository.save(userTmp);
+    return res;
+    // } catch (error) {
+    //   if (error.errno === 1062) {
+    //     throw new HttpException(error.sqlMessage, 500);
+    //   }
+    // }
   }
 
   async update(id: number, user: Partial<User>) {
