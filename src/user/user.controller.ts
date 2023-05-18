@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   LoggerService,
@@ -47,10 +48,6 @@ export class UserController {
 
   @Get('profile')
   getUserProfile(@Query('id') query: any) {
-    console.log(
-      '🚀 ~ file: user.controller.ts:42 ~ UserController ~ getUserProfile ~ query:',
-      query,
-    );
     return this.userService.findProfile(1);
   }
 
@@ -62,6 +59,11 @@ export class UserController {
   @Patch('/:id')
   updateUser(@Body() dto: any, @Param('id') id: number) {
     return { id };
+  }
+
+  @Delete('/:id')
+  removeUser(@Param('id') id: number) {
+    return this.userService.remove(id);
   }
 
   // todo
