@@ -10,6 +10,9 @@ import {
   Post,
   Query,
   UseFilters,
+  Headers,
+  HttpException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ConfigService } from '@nestjs/config';
@@ -57,8 +60,16 @@ export class UserController {
   }
 
   @Patch('/:id')
-  updateUser(@Body() dto: any, @Param('id') id: number) {
-    return { id };
+  updateUser(
+    @Body() dto: User,
+    @Param('id') id: number,
+    @Headers('Authorization') headers: any,
+  ) {
+    if (headers === id) {
+      return this.userService.update(id, dto);
+    } else {
+      throw new UnauthorizedException('没有权限');
+    }
   }
 
   @Delete('/:id')

@@ -24,14 +24,14 @@ export class User {
   @Column()
   password: string;
 
-  @OneToMany(() => Logs, (logs) => logs.user)
+  @OneToMany(() => Logs, (logs) => logs.user, { cascade: true })
   logs: Logs[];
 
-  @ManyToMany(() => Roles, (roles) => roles.users)
+  @ManyToMany(() => Roles, (roles) => roles.users, { cascade: ['insert'] })
   @JoinTable({ name: 'user_roles' })
   roles: Roles[];
 
-  @OneToOne(() => Profile, (profile) => profile.user)
+  @OneToOne(() => Profile, (profile) => profile.user, { cascade: true })
   profile: Profile;
 
   @AfterInsert()

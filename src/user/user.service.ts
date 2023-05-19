@@ -1,43 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Logs } from '../logs/logs.entity';
 import { GetUserDto } from './get-user-dto';
 import { conditionUtils } from 'src/utils/db.helper';
+import { Roles } from 'src/roles/roles.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Logs) private readonly logsRepositoy: Repository<Logs>,
+    @InjectRepository(Roles) private readonly rolesRepositoy: Repository<Roles>,
   ) {}
 
   findAll(query: GetUserDto) {
     const { limit = 10, page, username, role, gender } = query;
     const skip = (page - 1) * limit;
 
-    // return this.userRepository.find({
-    //   select: {
-    //     id: true,
-    //     username: true,
-    //   },
-    //   relations: {
-    //     profile: true,
-    //     roles: true,
-    //   },
-    //   where: {
-    //     username,
-    //     profile: {
-    //       gender,
-    //     },
-    //     roles: {
-    //       id: role,
-    //     },
-    //   },
-    //   take: limit,
-    //   skip: (page - 1) * limit,
-    // });
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.profile', 'profile')
@@ -62,6 +43,14 @@ export class UserService {
   }
 
   async create(user: User) {
+    if (Array.isArray(user.roles) && typeof user.roles[0] === 'number') {
+      user.roles = await this.rolesRepositoy.find({
+        where: {
+          id: In(user.roles),
+        },
+      });
+    }
+
     const userTmp = await this.userRepository.create(user);
     // try {
     const res = await this.userRepository.save(userTmp);
@@ -74,7 +63,11 @@ export class UserService {
   }
 
   async update(id: number, user: Partial<User>) {
-    return this.userRepository.update(id, user);
+    // 只适合单模型的更新。不适合关联模型更新
+    // return this.userRepository.update(id, user);
+    const userTmp = await this.findProfile(id);
+    const newUser = this.userRepository.merge(userTmp, user);
+    return this.userRepository.save(newUser);
   }
 
   async remove(id: number) {
