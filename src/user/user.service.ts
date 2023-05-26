@@ -46,6 +46,7 @@ export class UserService {
     if (Array.isArray(user.roles) && typeof user.roles[0] === 'number') {
       user.roles = await this.rolesRepositoy.find({
         where: {
+          // id包含在数组内
           id: In(user.roles),
         },
       });

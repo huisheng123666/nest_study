@@ -27,6 +27,7 @@ export class User {
   @OneToMany(() => Logs, (logs) => logs.user, { cascade: true })
   logs: Logs[];
 
+  // 只在插入用户的时候执行，删除用户的时候不需要删除角色
   @ManyToMany(() => Roles, (roles) => roles.users, { cascade: ['insert'] })
   @JoinTable({ name: 'user_roles' })
   roles: Roles[];
