@@ -8,6 +8,9 @@ import * as dotenv from 'dotenv';
 import { LogsModule } from './logs/logs.module';
 import { RolesModule } from './roles/roles.module';
 import { connectionParams } from '../ormconfig';
+import { AuthController } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
+import { AuthModule } from './auth/auth.module';
 
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
 
@@ -59,7 +62,9 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
     UserModule,
     LogsModule,
     RolesModule,
+    AuthModule,
   ],
-  controllers: [],
+  controllers: [AuthController],
+  providers: [AuthService],
 })
 export class AppModule {}

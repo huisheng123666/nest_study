@@ -64,8 +64,14 @@ export class UserService {
   }
 
   async update(id: number, user: Partial<User>) {
-    // 只适合单模型的更新。不适合关联模型更新
-    // return this.userRepository.update(id, user);
+    if (Array.isArray(user.roles) && typeof user.roles[0] === 'number') {
+      user.roles = await this.rolesRepositoy.find({
+        where: {
+          // id包含在数组内
+          id: In(user.roles),
+        },
+      });
+    }
     const userTmp = await this.findProfile(id);
     const newUser = this.userRepository.merge(userTmp, user);
     return this.userRepository.save(newUser);
