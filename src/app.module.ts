@@ -37,28 +37,6 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
       }),
     }),
     TypeOrmModule.forRoot(connectionParams),
-    // LoggerModule.forRoot({
-    //   pinoHttp: {
-    //     transport:
-    //       process.env.NODE_ENV !== 'development'
-    //         ? {
-    //             target: 'pino-pretty',
-    //             options: {
-    //               colorize: true,
-    //             },
-    //           }
-    //         : {
-    //             target: 'pino-roll',
-    //             options: {
-    //               file: join('logs', 'log.txt'),
-    //               frequenency: 'daily',
-    //               mkdir: true,
-    //               // 多大滚动一次
-    //               size: '10m',
-    //             },
-    //           },
-    //   },
-    // }),
     UserModule,
     LogsModule,
     RolesModule,

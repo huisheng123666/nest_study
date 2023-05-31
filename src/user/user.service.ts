@@ -16,7 +16,7 @@ export class UserService {
   ) {}
 
   findAll(query: GetUserDto) {
-    const { limit = 10, page, username, role, gender } = query;
+    const { limit = 10, page = 1, username, role, gender } = query;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.userRepository
@@ -42,7 +42,11 @@ export class UserService {
     return this.userRepository.findOne({ where: { id } });
   }
 
-  async create(user: User) {
+  async create(user: Partial<User>) {
+    if (!user.roles) {
+      const role = await this.rolesRepositoy.findOne({ where: { id: 2 } });
+      user.roles = [role];
+    }
     if (Array.isArray(user.roles) && typeof user.roles[0] === 'number') {
       user.roles = await this.rolesRepositoy.find({
         where: {
