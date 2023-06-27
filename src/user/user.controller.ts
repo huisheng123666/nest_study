@@ -6,6 +6,7 @@ import {
   Inject,
   LoggerService,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -15,8 +16,10 @@ import { UserService } from './user.service';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { User } from './user.entity';
-import { GetUserDto } from './get-user-dto';
+import { GetUserDto } from './dto/get-user-dto';
 import { TypeormFilter } from 'src/filters/typeorm.filter';
+import { CreateUserPipe } from './pipes/create-user.pipe';
+import { CreateUserDto } from './dto/create-user-dto';
 
 @Controller('user')
 @UseFilters(new TypeormFilter())
@@ -41,14 +44,18 @@ export class UserController {
   }
 
   @Post()
-  addUser(@Body() dto: any) {
+  addUser(@Body(CreateUserPipe) dto: CreateUserDto) {
     const user = dto as User;
     return this.userService.create(user);
   }
 
   @Get('profile')
-  getUserProfile(@Query('id') query: any) {
-    return this.userService.findProfile(1);
+  getUserProfile(@Query('id', ParseIntPipe) id: any) {
+    console.log(
+      '🚀 ~ file: user.controller.ts:51 ~ UserController ~ getUserProfile ~ id:',
+      typeof id,
+    );
+    return this.userService.findProfile(id);
   }
 
   @Get('/:id')

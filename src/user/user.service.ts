@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { In, Repository } from 'typeorm';
 import { Logs } from '../logs/logs.entity';
-import { GetUserDto } from './get-user-dto';
+import { GetUserDto } from './dto/get-user-dto';
 import { conditionUtils } from 'src/utils/db.helper';
 import { Roles } from 'src/roles/roles.entity';
 
